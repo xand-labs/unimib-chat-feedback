@@ -1,22 +1,20 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title>Nuova richiesta</title>
-	</head>
-	<body>
-		<h1>Inserisci richiesta</h1>
-		<form method="post">
-			<label>
-				<div>Oggetto</div>
-				<input type="text" name="subject" value="{{subject}}">
-			</label>
+{% extends "base.html" %}
 
-			<label>
-				<div>Richiesta</div>
-				<textarea name="content">{{content}}</textarea>
-			</label>
+{% block title %} Nuova richiesta {% endblock %}
 
-			<input type="submit">
-		</form>
-	</body>
-</html>
+{% block body %}
+	<h1>Inserisci richiesta</h1>
+	<form method="post">
+		<label>
+			<div>Oggetto</div>
+			<input type="text" name="subject" value="{{subject}}">
+		</label>
+
+		<label>
+			<div>Richiesta</div>
+			<textarea name="content">{{content}}</textarea>
+		</label>
+
+		<input type="submit">
+	</form>
+{% endblock %}
