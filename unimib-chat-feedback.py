@@ -1,7 +1,9 @@
 import os
 
-#from google.appengine.api import users
-from google.appengine.ext import db
+from google.appengine.api import users
+#from google.appengine.ext import db
+
+from google.appengine.ext import ndb
 
 import jinja2
 import webapp2
@@ -41,16 +43,16 @@ EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
-class Blog(db.Model):
+class Blog(ndb.Model):
     """Models an individual blog entry."""
-    subject = db.StringProperty(required = True)
-    content = db.TextProperty(required = True)
-    date = db.DateTimeProperty(auto_now_add=True)
+    subject = ndb.StringProperty(required = True)
+    content = ndb.TextProperty(required = True)
+    date = ndb.DateTimeProperty(auto_now_add=True)
 
-class User(db.Model):
-    username = db.StringProperty(required = True)
-    password = db.StringProperty(required = True)
-    email = db.StringProperty(required = False)
+class User(ndb.Model):
+    username = ndb.StringProperty(required = True)
+    password = ndb.StringProperty(required = True)
+    email = ndb.StringProperty(required = False)
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -140,85 +142,26 @@ class SignUp(Handler):
             self.response.headers.add_header('Set-Cookie', 'user-id=%s|%s; Path=/' % (key, key_hash))
             self.redirect('/blog/welcome?username=' + username)
 
+
 class Login(Handler):
     def get(self):
-        self.render('login.html')
+        # Checks for active Google account session
+        user = users.get_current_user()
 
-    def post(self):
-        have_error = False
-        username = self.request.get("username")
-        password = self.request.get("password")
-
-        params = dict(username = username)
-
-        if not valid_username(username):
-            params['error'] = "Login error"
-            have_error = True
-
-        if not valid_password(password):
-            params['error'] = "Login error"
-            have_error = True
-
-        user = User.all().filter("username =", username).get()
-        if user is None:
-            params['error'] = "Login error"
-            have_error = True
-        elif not valid_pw_hash(username, password, user.password):
-            params['error'] = "Login error"
-            have_error = True
-
-        if have_error:
-            self.render('login.html', **params)
+        if user:
+            params = {}
+            params['nick'] = user.nickname()
+            params['logout'] = users.create_logout_url(self.request.uri)
+            self.render('welcome.html', **params)
         else:
-            key = str(user.key().id())
-            key_hash = hashlib.md5(key).hexdigest()
-            self.response.headers.add_header('Set-Cookie', 'user-id=%s|%s; Path=/' % (key, key_hash))
-            self.redirect('/blog/welcome')
+            self.redirect(users.create_login_url(self.request.uri))
 
-class Index(Handler):
-    def get(self):
-        self.write('Hello, Udacity!')
 
-class Welcome(Handler):
-    def get(self):
-        user_id, user_hash = self.request.cookies.get('user-id').split('|')
-        user = User.get_by_id(int(user_id))
-        if user_hash == hashlib.md5(user_id).hexdigest():
-            self.render('welcome.html', user=user)
-        else:
-            self.redirect('/blog/signup')
-
-class Logout(Handler):
-    def get(self):
-        self.response.headers.add_header('Set-Cookie', 'user-id=; Path=/')
-        self.redirect('/blog/signup')
-
-class Rot13(Handler):
-    def get(self):
-        self.render('rot13.html')
-
-    def post(self):
-        text = self.request.get('text')
-        lo = string.ascii_lowercase
-        up = string.ascii_uppercase
-        newtext = ''
-        for c in text:
-            if c in lo:
-                newtext += list(lo)[(lo.index(c) + 13) % 26]
-            elif c in up:
-                newtext += list(up)[(up.index(c) + 13) % 26]
-            else:
-                newtext += c
-        self.render('rot13.html', text=newtext)
 
 application = webapp2.WSGIApplication([
-    (r'/', Index),
-    (r'/rot13', Rot13),
+    (r'/', Login),
     (r'/blog', MainPage),
     (r'/blog/newpost', NewPost),
     (r'/blog/(\d+)', SingleBlog),
-    (r'/blog/signup', SignUp),
-    (r'/blog/welcome', Welcome),
-    (r'/blog/login', Login),
-    (r'/blog/logout', Logout)
+    (r'/blog/signup', SignUp)
 ], debug=True)
