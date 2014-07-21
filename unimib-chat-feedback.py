@@ -97,7 +97,8 @@ class Login(Handler):
         # Checks for active Google account session
         user = users.get_current_user()
 
-        if user and user.email()[-9:] != 'unimib.it':
+        if user and (user.email()[-9:] != 'unimib.it' and user.email() not in ['alfio.emanuele.f@gmail.com',
+                                                                         'luca.desano@gmail.com']):
             self.redirect(users.create_logout_url('http://xkcd.com'))
         elif user:
             params = {}
