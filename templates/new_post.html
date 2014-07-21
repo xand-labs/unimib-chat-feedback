@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test blog</title>
+	</head>
+	<body>
+		<h1>Inserisci entries</h1>
+		<form method="post">
+			<label>
+				<div>Title</div>
+				<input type="text" name="subject" value="{{subject}}">
+			</label>
+
+			<label>
+				<div>Contenuto</div>
+				<textarea name="content">{{content}}</textarea>
+			</label>
+			
+			<div class="error">{{error}}</div>
+
+			<input type="submit">
+		</form>
+	</body>
+</html>
