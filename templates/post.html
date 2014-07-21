@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{ post.subject }}</title>
+	</head>
+	<body>
+		<div><a href='/'>home</a></div>
+		<br />
+		<h1> {{ post.subject}}</h1>
+		<div>
+			<p>{{ post.content }}</p>
+		</div>
+
+		{% for comment in comments %}
+			<hr>
+			<div class="blog">
+				<div class="blog-header">
+					<span>{{comment.author}} alle </span>
+					<span class="blog-time">{{comment.date}} scrive: </span>
+				</div>
+				<div class="blog-blog">{{comment.content}}</div>
+			</div>
+			<br />
+		{% endfor%}
+
+		<form method="post">
+			<label>
+				<div>Commenta</div>
+				<textarea name="content" required>{{content}}</textarea>
+			</label>
+
+			<input type="submit">
+		</form>
+	</body>
+</html>
+

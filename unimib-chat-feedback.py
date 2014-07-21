@@ -5,6 +5,7 @@ from google.appengine.ext import ndb
 
 import jinja2
 import webapp2
+import urllib
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -15,14 +16,18 @@ class Post(ndb.Model):
     subject = ndb.StringProperty(required = True)
     content = ndb.TextProperty(required = True)
     date = ndb.DateTimeProperty(auto_now_add=True)
-    #author = qualcosa
+    author = ndb.UserProperty()
 
-class Reply(ndb.model):
+class Comment(ndb.Model):
     """Models an individual post entry."""
-    #post = legata al post
+    #post = ndb.KeyProperty(kind = Post)
     content = ndb.TextProperty(required = True)
     date = ndb.DateTimeProperty(auto_now_add=True)
-    #author = qualcosa
+    author = ndb.UserProperty()
+
+    @classmethod
+    def query_post(cls, ancestor_key):
+        return cls.query(ancestor=ancestor_key).order(cls.date)
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -48,19 +53,44 @@ class NewPost(Handler):
         content = self.request.get("content")
 
         if content and subject:
-            b = Post(subject = subject, content = content)
-            b.put()
-            key = b.key().id()
-            self.redirect('/blog/' + str(key))
+            post = Post(subject = subject, 
+                        content = content, 
+                        author = users.get_current_user())
+            post_key = post.put()
+            self.redirect('/post/' + str(post_key.id()))
         else:
-            error = "gnegnegne"
+            error = "fai attenzione e completa bene"
             self.render_new_post(subject, content, error)
 
 class SinglePost(Handler):
-    def get(self, blog_id):
-        blog = Post.get_by_id(int(blog_id))
-        if blog:
-            self.render('index.html', blogs=[blog])
+    def get(self, post_id):
+        post = Post.get_by_id(int(post_id))
+        if post:
+            params = {}
+            params['post'] = post
+            ancestor_key = ndb.Key("Post", post.key.id())
+            params['comments'] = Comment.query_post(ancestor_key).fetch()
+            self.render('post.html', **params)
+        else:
+            self.redirect('/')
+
+    def post(self, post_id):
+        content = self.request.get("content")
+        print(post_id)
+        post = Post.get_by_id(int(post_id))
+        if content and post:
+            comment = Comment(parent = ndb.Key("Post", post.key.id()),
+                              content = content,
+                              author = users.get_current_user())
+            comment.put()
+            params = {}
+            params['post'] = post
+            ancestor_key = ndb.Key("Post", post.key.id())
+            params['comments'] = Comment.query_post(ancestor_key).fetch()
+            self.render('post.html', **params)
+        else:
+            self.redirect('/')
+
 
 class Login(Handler):
     def get(self):
@@ -71,6 +101,7 @@ class Login(Handler):
             params = {}
             params['nick'] = user.nickname()
             params['logout'] = users.create_logout_url(self.request.uri)
+            params['posts'] = Post().query().order(-Post.date)
             self.render('welcome.html', **params)
         else:
             self.redirect(users.create_login_url(self.request.uri))

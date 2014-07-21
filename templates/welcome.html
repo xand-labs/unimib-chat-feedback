@@ -5,6 +5,15 @@
 	</head>
 	<body>
 		<div>Welcome, {{ nick }}!</div>
-		<a href= {{ logout }}> logout </a>
+		<div><a href='/newpost'> new post </a></div>
+		<div><a href= {{ logout }}> logout </a></div>
+		<br />
+		{% for post in posts %}
+			<div>
+				<span> <a href='/post/{{ post.key.id() }}'> {{ post.subject }} </a></span> | 
+				<span> {{ post.author }} </span> | 
+				<span> {{ post.date }} </span>
+			</div>
+		{% endfor %}
 	</body>
 </html>
