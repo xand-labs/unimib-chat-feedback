@@ -1,10 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %} {{ post.subject }} {% endblock %}
+{% block navbar %} <a href='/'>HOME</a> {% endblock %}
 
 {% block body %}
-	<div><a href='/'>home</a></div>
-	<br />
 	<h1> {{ post.subject}}</h1>
 	<div>
 		<p>{{ post.content }}</p>

@@ -38,6 +38,10 @@ class Handler(webapp2.RequestHandler):
         return t.render(params)
 
     def render(self, template, **kw):
+        user = users.get_current_user()
+        if user:
+            kw['user'] = user
+        kw['logout'] = users.create_logout_url(self.request.uri)
         self.write(self.render_str(template, **kw))
 
 
@@ -46,7 +50,8 @@ class NewPost(Handler):
         self.render('new_post.html', subject=subject, content=content, error=error)
 
     def get(self):
-        self.render('new_post.html')
+        params = {}
+        self.render('new_post.html', **params)
 
     def post(self):
         subject = self.request.get("subject")
@@ -102,8 +107,6 @@ class Login(Handler):
             self.redirect(users.create_logout_url('http://xkcd.com'))
         elif user:
             params = {}
-            params['nick'] = user.nickname()
-            params['logout'] = users.create_logout_url(self.request.uri)
             params['posts'] = Post().query().order(-Post.date)
             self.render('welcome.html', **params)
         else:

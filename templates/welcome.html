@@ -2,11 +2,10 @@
 
 
 {% block title %} Segnala quel che vuoi {% endblock %}
+{% block navbar %} Benvenuto {{ user.nickname() }}! {% endblock %}
 
 	{% block body %}
-	<div>Benvenuto, {{ nick }}!</div>
 	<div><a href='/newpost'> new post </a></div>
-	<div><a href= {{ logout }}> logout </a></div>
 	<br />
 	{% for post in posts %}
 		<div>
