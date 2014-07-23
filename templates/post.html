@@ -4,30 +4,39 @@
 {% block navbar %} <a href='/'>HOME</a> {% endblock %}
 
 {% block body %}
-	<h1> {{ post.subject}}</h1>
-	<div>
-		<p>{{ post.content }}</p>
+	<div class="page-header">
+  		<h1>{{ post.subject}} <small> di {{ post.author.nickname() }} pubblicato alle {{ post.date }}</small></h1>
 	</div>
-
+	<div class="row">
+		<div class="col-sm-6">
+			<p>{{ post.content }}</p>
+		</div>
+	</div>
 	{% for comment in comments %}
 		<hr>
-		<div class="blog">
-			<div class="blog-header">
+		<div class="row">
+			<div class="col-sm-offset-1 col-sm-6">
 				<span>{{comment.author}} alle </span>
 				<span class="blog-time">{{comment.date}} scrive: </span>
+			
+				<p>{{comment.content}}</p>
 			</div>
-			<div class="blog-blog">{{comment.content}}</div>
 		</div>
 		<br />
 	{% endfor%}
-
-	<form method="post">
-		<label>
-			<div>Commenta</div>
-			<textarea name="content" required>{{content}}</textarea>
-		</label>
-
-		<input type="submit">
+	<hr />
+	<form method="post" class="form-horizontal" role="form">
+		<div class="form-group">
+			<label for="content" class="col-sm-1 control-label">Commenta</label>
+			<div class="col-sm-6">
+				<textarea name="content" required class="form-control"  id="content" rows="3">{{content}}</textarea>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-1 col-sm-6">
+				<input type="submit" class="btn btn-default" value="Invia">
+			</div>
+		</div>
 	</form>
 
 {% endblock %}
