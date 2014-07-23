@@ -1,11 +1,14 @@
 import os
+import jinja2
+import webapp2
+import json
 
+from urllib import urlencode
+from httplib2 import Http
 from google.appengine.api import users
 from google.appengine.ext import ndb
 
-import jinja2
-import webapp2
-import urllib
+
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -62,10 +65,34 @@ class NewPost(Handler):
                         content = content, 
                         author = users.get_current_user())
             post_key = post.put()
+
+            self.slack(subject, content)
+
             self.redirect('/post/' + str(post_key.id()))
         else:
             error = "fai attenzione e completa bene"
             self.render_new_post(subject, content, error)
+
+    @staticmethod
+    def slack(subject, content):
+
+        conf = open('config.json').read()
+        conf = json.loads(conf)
+
+        key = conf['slack'][0]['key']
+        channel = conf['slack'][0]['channel']
+
+        url = 'https://slack.com/api/chat.postMessage'
+        data = dict(token=key, 
+                    channel=channel,
+                    text=subject + '\n' + content, 
+                    username='feedback', 
+                    icon_url='http://unimib-chat-feedback.appspot.com/static/img/xand.png')
+        request = url + '?' + urlencode(data)
+
+        h = Http()
+        h.request(request, "GET")
+
 
 class SinglePost(Handler):
     def get(self, post_id):
