@@ -5,15 +5,24 @@
 {% block navbar %} Benvenuto {{ user.nickname() }}! {% endblock %}
 
 	{% block body %}
-	<div><a href='/newpost'> new post </a></div>
+	<div class="page-header">
+  		<h1> Elenco post <small>se non trovi ciò che cerchi crea un nuovo post </small></h1>
+	</div>
 	<br />
 	{% for post in posts %}
-		<div>
-			<span> <a href='/post/{{ post.key.id() }}'> {{ post.subject }} </a></span> | 
-			<span> {{ post.author }} </span> | 
-			<span> {{ post.date }} </span>
+		<div class="row">
+			<div class="col-sm-6">
+				<a href='/post/{{ post.key.id() }}'> {{ post.subject }} </a> <br />
+				<small> di {{ post.author }} pubblicato il {{ post.date }} </small>
+			</div>
 		</div>
+		<br />
 	{% endfor %}
+	<div class="row">
+		<div class="col-sm-6 col-sm-offset-1">
+			<a href='/newpost' class="btn btn-default"> Nuovo Messaggio </a>
+		</div>
+	</div>
 
 {% endblock %}
 

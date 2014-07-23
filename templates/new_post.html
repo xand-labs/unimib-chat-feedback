@@ -4,18 +4,27 @@
 {% block navbar %} <a href='/'>HOME</a> {% endblock %}
 
 {% block body %}
-	<h1>Inserisci richiesta</h1>
-	<form method="post">
-		<label>
-			<div>Oggetto</div>
-			<input type="text" name="subject" value="{{subject}}">
-		</label>
+	<div class="page-header">
+  		<h1>Inserisci la richiesta</h1>
+	</div>
 
-		<label>
-			<div>Richiesta</div>
-			<textarea name="content">{{content}}</textarea>
-		</label>
-
-		<input type="submit">
+	<form method="post" class="form-horizontal" role="form">
+		<div class="form-group">
+			<label for="content" class="col-sm-1 control-label">Titolo</label>
+			<div class="col-sm-6">
+				<input type="text" name="subject" value="{{subject}}" class="form-control">
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="content" class="col-sm-1 control-label">Messaggio</label>
+			<div class="col-sm-6">
+				<textarea name="content" class="form-control" rows="3">{{content}}</textarea>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-1 col-sm-6">
+				<input type="submit" class="btn btn-default" value="invia">
+			</div>
+		</div>
 	</form>
 {% endblock %}
