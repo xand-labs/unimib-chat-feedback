@@ -4,7 +4,7 @@ import webapp2
 import json
 
 from urllib import urlencode
-from httplib2 import Http
+from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import ndb
 
@@ -61,12 +61,13 @@ class NewPost(Handler):
         content = self.request.get("content")
 
         if content and subject:
+            user = users.get_current_user()
             post = Post(subject = subject, 
                         content = content, 
-                        author = users.get_current_user())
+                        author = user)
             post_key = post.put()
 
-            self.slack(subject, content)
+            self.slack(subject, str(post_key.id()), user)
 
             self.redirect('/post/' + str(post_key.id()))
         else:
@@ -74,7 +75,7 @@ class NewPost(Handler):
             self.render_new_post(subject, content, error)
 
     @staticmethod
-    def slack(subject, content):
+    def slack(subject, post_id, user):
 
         conf = open('config.json').read()
         conf = json.loads(conf)
@@ -83,15 +84,15 @@ class NewPost(Handler):
         channel = conf['slack'][0]['channel']
 
         url = 'https://slack.com/api/chat.postMessage'
+        link = 'http://unimib-chat-feedback.appspot.com/post/' + post_id
         data = dict(token=key, 
                     channel=channel,
-                    text=subject + '\n' + content, 
+                    text='*' + subject + '* _' + user.nickname() + '_ \n' + link, 
                     username='feedback', 
                     icon_url='http://unimib-chat-feedback.appspot.com/static/img/xand.png')
         request = url + '?' + urlencode(data)
 
-        h = Http()
-        h.request(request, "GET")
+        urlfetch.fetch(request)
 
 
 class SinglePost(Handler):
